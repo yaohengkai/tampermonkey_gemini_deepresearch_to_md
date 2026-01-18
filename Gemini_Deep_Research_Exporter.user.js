@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Gemini Deep Research Exporter (Final Fix)
+// @name         Gemini Deep Research Exporter
 // @namespace    http://tampermonkey.net/
 // @version      1.3
-// @description  Deep Research 导出最终极速版（暴力强显按钮版）
+// @description  Deep Research 导出最终极速版
 // @author       Eddy
 // @match        https://gemini.google.com/*
 // @grant        GM_registerMenuCommand
