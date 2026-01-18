@@ -1,17 +1,96 @@
 // ==UserScript==
-// @name         Gemini Deep Research Exporter
+// @name         Gemini Deep Research Exporter (Final Fix)
 // @namespace    http://tampermonkey.net/
-// @version      1.0
-// @description  Deep Research 导出最终极速版：
+// @version      1.3
+// @description  Deep Research 导出最终极速版（暴力强显按钮版）
 // @author       Eddy
 // @match        https://gemini.google.com/*
 // @grant        GM_registerMenuCommand
+// @run-at       document-end
 // ==/UserScript==
 
 (function() {
     'use strict';
 
-    GM_registerMenuCommand("⚡️ 导出 Markdown", executeExport);
+    console.log("🚀 Gemini Exporter: 脚本已启动");
+
+    // --- 1. 注册菜单命令（保底方案） ---
+    // 如果实在看不到按钮，点击油猴插件图标，菜单里一定有这个选项
+    GM_registerMenuCommand("⚡️ 手动导出 Markdown", executeExport);
+    GM_registerMenuCommand("🔄 强制刷新按钮", initButton);
+
+    // --- 2. 暴力强显逻辑 ---
+    function initButton() {
+        // 如果按钮已存在，直接返回，避免重复
+        if (document.getElementById('gemini-export-btn-v3')) return;
+
+        console.log("🔧 Gemini Exporter: 正在创建按钮...");
+
+        const btn = document.createElement('div');
+        btn.id = 'gemini-export-btn-v3';
+        btn.innerText = "MD";
+        btn.title = "点击导出 Deep Research";
+
+        // 强力样式 - 确保层级最高，位置显眼
+        Object.assign(btn.style, {
+            position: 'fixed',
+            top: '150px',         // 距离顶部 150px，避开顶部栏
+            right: '20px',        // 距离右侧 20px
+            width: '50px',
+            height: '50px',
+            lineHeight: '50px',
+            textAlign: 'center',
+            backgroundColor: '#B22222', // 改为深红色，确保显眼
+            color: 'white',
+            borderRadius: '50%',
+            fontWeight: 'bold',
+            fontSize: '14px',
+            boxShadow: '0 0 15px rgba(0,0,0,0.5)', // 强阴影
+            zIndex: '2147483647', // CSS 允许的最大层级
+            cursor: 'pointer',
+            userSelect: 'none',
+            fontFamily: 'sans-serif',
+            border: '2px solid white'
+        });
+
+        // 悬浮变色
+        btn.onmouseenter = () => btn.style.backgroundColor = '#FF0000';
+        btn.onmouseleave = () => btn.style.backgroundColor = '#B22222';
+
+        // 点击事件
+        btn.onclick = (e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            console.log("👆 点击了导出按钮");
+            executeExport();
+        };
+
+        // 插入到 body
+        document.body.appendChild(btn);
+        console.log("✅ Gemini Exporter: 按钮已插入页面");
+    }
+
+    // --- 3. 监控页面变化 (MutationObserver) ---
+    // 只要 Gemini 刷新页面把按钮删了，这个监听器就会立刻把它加回来
+    const observer = new MutationObserver((mutations) => {
+        if (!document.getElementById('gemini-export-btn-v3')) {
+            initButton();
+        }
+    });
+
+    // 开始监控整个 body
+    observer.observe(document.body, { childList: true, subtree: true });
+
+    // 启动时的双重保险
+    window.addEventListener('load', initButton);
+    setTimeout(initButton, 1000);
+    setTimeout(initButton, 3000);
+
+
+    // ============================================================
+    // 以下为核心导出逻辑 (保持不变)
+    // ============================================================
+
 
     let globalCitations = [];
 
